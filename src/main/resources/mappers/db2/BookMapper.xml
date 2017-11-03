@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.yjxxclub.demo.datasource.dao.db2.BookMapper">
+
+    <resultMap type="cn.yjxxclub.demo.datasource.model.Book" id="BookResult">
+        <result property="id" column="id"/>
+        <result property="bookname" column="bookname"/>
+        <result property="author" column="author"/>
+        <result property="publish" column="publish"/>
+        <result property="price" column="price"/>
+        <result property="time" column="time"/>
+    </resultMap>
+
+    <select id="list" parameterType="Map" resultMap="BookResult">
+        select * from t_book
+        <where>
+            <if test="time!=null and time!='' ">
+                and DATE_FORMAT(time,'%Y年%m月') = #{time}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="findById" parameterType="Integer" resultMap="BookResult">
+        select * from t_book
+        where id=#{id}
+    </select>
+
+
+    <update id="update" parameterType="Book">
+        update t_book
+        <set>
+            <if test="bookname!=null and bookname!='' ">
+                bookname=#{bookname},
+            </if>
+            <if test="author!=null and author!='' ">
+                author=#{author},
+            </if>
+            <if test="publish!=null and publish!='' ">
+                publish=#{publish},
+            </if>
+            <if test="price!=null and price!='' ">
+                price=#{price},
+            </if>
+            time=now(),
+        </set>
+        where id=#{id}
+    </update>
+
+    <insert id="add" useGeneratedKeys="true" keyProperty="id" parameterType="Book">
+        insert into t_book values(null,#{bookname},#{author},#{publish},#{price},now())
+    </insert>
+
+    <delete id="deleteById" parameterType="Integer">
+        delete from t_book where id=#{id}
+    </delete>
+
+
+</mapper>
