@@ -22,9 +22,9 @@ import javax.sql.DataSource;
  */
 @Configuration
 @MapperScan(basePackages = {"cn.yjxxclub.demo.datasource.dao"})
-public class MybatisDb1Config {
+public class MybatisDbConfig {
 
-    @Qualifier("dynamicDS1")
+    @Qualifier("dynamicDS")
     @Autowired
     DataSource dataSource;
 
