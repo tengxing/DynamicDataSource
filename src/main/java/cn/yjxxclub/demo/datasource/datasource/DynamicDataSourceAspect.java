@@ -15,20 +15,18 @@ import java.lang.reflect.Method;
  * Email: tengxing7452@163.com
  * Date: 17-11-2
  * Time: 下午3:01
- * Describe:
+ * Describe: 动态数据源代理类
  */
 @Aspect
 @Component
 @Order(value=-1)
 public class DynamicDataSourceAspect {
 
-    @Before("@annotation(DB)")
+    @Before("@annotation(TargetDataSource)")
     public void beforeSwitchDS(JoinPoint point){
 
-        //获得当前访问的class
         Class<?> className = point.getTarget().getClass();
 
-        //获得访问的方法名
         String methodName = point.getSignature().getName();
         //得到方法的参数的类型
         Class[] argClass = ((MethodSignature)point.getSignature()).getParameterTypes();
@@ -37,26 +35,20 @@ public class DynamicDataSourceAspect {
             // 得到访问的方法对象
             Method method = className.getMethod(methodName, argClass);
 
-            // 判断是否存在@DS注解
-            if (method.isAnnotationPresent(DB.class)) {
-                DB annotation = method.getAnnotation(DB.class);
-                // 取出注解中的数据源名
+            if (method.isAnnotationPresent(TargetDataSource.class)) {
+                TargetDataSource annotation = method.getAnnotation(TargetDataSource.class);
                 dataSource = annotation.value();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         // 切换数据源
         DataSourceContextHolder.setDB(dataSource);
 
     }
 
-
-    @After("@annotation(DB)")
+    @After("@annotation(TargetDataSource)")
     public void afterSwitchDS(JoinPoint point){
-
         DataSourceContextHolder.clearDB();
-
     }
 }

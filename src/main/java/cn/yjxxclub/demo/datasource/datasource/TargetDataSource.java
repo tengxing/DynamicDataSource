@@ -16,6 +16,6 @@ import java.lang.annotation.Target;
 @Target({
         ElementType.METHOD
 })
-public @interface DB {
+public @interface TargetDataSource {
     String value() default "ds1";
 }
