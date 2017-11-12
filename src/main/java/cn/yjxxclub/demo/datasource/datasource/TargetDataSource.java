@@ -10,12 +10,10 @@ import java.lang.annotation.Target;
  * Email: tengxing7452@163.com
  * Date: 17-11-2
  * Time: 下午3:00
- * Describe:
+ * Describe: @annotation
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({
-        ElementType.METHOD
-})
+@Target({ElementType.METHOD,ElementType.TYPE})
 public @interface TargetDataSource {
-    String value() default "ds1";
+    String value() default "dataSource1";
 }

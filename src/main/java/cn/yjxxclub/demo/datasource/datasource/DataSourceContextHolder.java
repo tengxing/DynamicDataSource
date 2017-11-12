@@ -23,19 +23,18 @@ public class DataSourceContextHolder {
     private static final ThreadLocal<String> contextHolder = new ThreadLocal<>();
 
     // 设置数据源标识
-    public static void setDB(String dbType) {
-        Assert.notNull(dbType, "dbType cannot be null");
-        log.debug("切换到{}数据源", dbType);
+    public static void setDataSource(String dbType) {
+        log.info("切换到{}数据源", dbType);
         contextHolder.set(dbType);
     }
 
     // 获取数据源标识
-    public static String getDB() {
+    public static String getDataSource() {
         return (contextHolder.get());
     }
 
     // 清除数据源标识
-    public static void clearDB() {
+    public static void clearDataSource() {
         contextHolder.remove();
     }
 }
