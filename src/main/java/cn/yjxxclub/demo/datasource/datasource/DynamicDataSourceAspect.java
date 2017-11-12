@@ -4,6 +4,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -22,33 +23,54 @@ import java.lang.reflect.Method;
 @Order(value=-1)
 public class DynamicDataSourceAspect {
 
-    @Before("@annotation(TargetDataSource)")
-    public void beforeSwitchDS(JoinPoint point){
+    /**
+     * 定义拦截规则
+     */
+    @Pointcut("within(cn.yjxxclub.demo.datasource.controller.*)")
+    public void pointCut(){}
 
-        Class<?> className = point.getTarget().getClass();
-
+    /**
+     * 基于java反射机制实现
+     * @param point
+     */
+    //@Before("@annotation(TargetDataSource)") 这样注解在类上会扫描不到
+    @Before("pointCut()")
+    public void beforeDynamicDataSource(JoinPoint point){
+        /*类*/
+        Class<?> targetClass = point.getTarget().getClass();
+        /*方法名*/
         String methodName = point.getSignature().getName();
-        //得到方法的参数的类型
-        Class[] argClass = ((MethodSignature)point.getSignature()).getParameterTypes();
-        String dataSource = DataSourceContextHolder.DEFAULT_DS;
-        try {
-            // 得到访问的方法对象
-            Method method = className.getMethod(methodName, argClass);
+        /*方法的参数的类型*/
+        Class[] parameterTypes = ((MethodSignature)point.getSignature()).getParameterTypes();
 
-            if (method.isAnnotationPresent(TargetDataSource.class)) {
+        String dataSourceType = DataSourceContextHolder.DEFAULT_DS;
+        try {
+            /*默认使用类型注解*/
+            if (targetClass.isAnnotationPresent(TargetDataSource.class)) {
+                TargetDataSource annotation = targetClass.getAnnotation(TargetDataSource.class);
+                dataSourceType = annotation.value();
+            }
+            /*由方法名和参数获取该类下的目标方法对象 */
+            Method method = targetClass.getMethod(methodName, parameterTypes);
+            /*方法注解可以覆盖类型注解*/
+            if (method!=null && method.isAnnotationPresent(TargetDataSource.class)) {
                 TargetDataSource annotation = method.getAnnotation(TargetDataSource.class);
-                dataSource = annotation.value();
+                dataSourceType = annotation.value();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        // 切换数据源
-        DataSourceContextHolder.setDB(dataSource);
+        /*切换数据源*/
+        DataSourceContextHolder.setDataSource(dataSourceType);
 
     }
 
-    @After("@annotation(TargetDataSource)")
-    public void afterSwitchDS(JoinPoint point){
-        DataSourceContextHolder.clearDB();
+    /**
+     * 使用完后清理
+     * @param point
+     */
+    @After("pointCut()")
+    public void afterDynamicDataSource(JoinPoint point){
+        DataSourceContextHolder.clearDataSource();
     }
 }
